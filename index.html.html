@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Recomendaciones Mercado Ads</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f6f6f6; }
+    #container {
+      background: #fff; padding: 20px; border-radius: 8px; width: 400px;
+      margin: 50px auto; box-shadow: 0 0 10px #bbb;
+    }
+    input, button {
+      padding: 8px; margin: 10px 0; width: 100%;
+      font-size: 16px;
+    }
+    #result { min-height: 30px; margin-top: 10px; color: #333; }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h2>Recomendaciones para Seller</h2>
+    <form id="form">
+      <input type="text" id="seller_id" placeholder="Ingresa Seller ID" required />
+      <button type="submit">Consultar</button>
+    </form>
+    <div id="result"></div>
+  </div>
+  <script>
+    document.getElementById('form').onsubmit = async (e) => {
+      e.preventDefault();
+      const sellerId = document.getElementById('seller_id').value.trim();
+      if (!sellerId) {
+        document.getElementById('result').innerText = "Por favor ingresa un Seller ID.";
+        return;
+      }
+      document.getElementById('result').innerText = "Buscando recomendaciones...";
+      try {
+        const resp = await fetch('http://verdi-flows.melisystems.com/webhook/dd4e7ab5-bd52-4582-a092-bd4d396b2dd6', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ seller_id: sellerId })
+        });
+        if (!resp.ok) {
+          document.getElementById('result').innerText = "Hubo un error en la consulta. Intenta más tarde.";
+          return;
+        }
+        const data = await resp.json();
+        if (data && data.recomendaciones) {
+          document.getElementById('result').innerText = data.recomendaciones;
+        } else {
+          document.getElementById('result').innerText = "No se encontraron recomendaciones para ese Seller ID.";
+        }
+      } catch (err) {
+        document.getElementById('result').innerText = "Error al conectar con el servidor.";
+      }
+    };
+  </script>
+</body>
+</html>
+
+<button onclick="descargarHTML()">Descargar este HTML</button>
+<script>
+function descargarHTML() {
+  const contenido = document.documentElement.outerHTML;
+  const blob = new Blob([contenido], { type: 'text/html' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'test_input_seller_id.html';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+}
+</script>
